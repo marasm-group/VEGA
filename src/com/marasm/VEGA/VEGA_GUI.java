@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
  */
 public class VEGA_GUI
 {
-    VEGA_Display screen;
+    public VEGA_Display screen;
     public VEGA_GUI()
     {
         screen = new VEGA_Display(800,600);
