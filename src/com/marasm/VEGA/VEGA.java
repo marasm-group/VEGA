@@ -16,7 +16,7 @@ import java.util.ArrayList;
 public class VEGA extends PPCDevice
 {
     public final String ctrlPort="127.0";
-    public final String dataPort="127.2";
+    public final String dataPort="127.1";
     private VEGA_GUI gui;
     private GPU func=GPU.NOP;
     private Variable color=new Variable();
@@ -57,9 +57,9 @@ public class VEGA extends PPCDevice
         switch (port.toString())
         {
             case ctrlPort:
-                if(data.equals(CTRL.NOP)){vegaCtrl(data);ctrlOut(data);return;}
+                if(data.isEqual(CTRL.NOP)){vegaCtrl(data);ctrlOut(data);return;}
                 if(data.isBigger(v2)){vegaCtrl(data);return;}
-                if(data.equals(v2)){vegaCtrl(data);return;}
+                if(data.isEqual(v2)){vegaCtrl(data);return;}
                 ctrlOut(data);return;
             case dataPort:
                 buf.add(data);
@@ -108,4 +108,5 @@ public class VEGA extends PPCDevice
             default:return;
         }
     }
+    static public void main(String args[]){System.out.println("This is just an mvm device!");}
 }
