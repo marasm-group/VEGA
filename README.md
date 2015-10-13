@@ -1,2 +1,4 @@
 # VEGA -- Video Express Graphic Adapter
-A simple graphics adapter for mvm
+A simple graphics adapter for [mvm](https://github.com/marasm-group/mvm)
+
+
