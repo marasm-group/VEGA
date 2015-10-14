@@ -48,3 +48,31 @@ out VEGA_dataPort X
 out VEGA_dataPort Y
 ret
 
+$drawRect ;; draw a rectangle with current color
+var X ;; X coordinate of upper left corner
+var Y ;; Y coordinate of upper left corner
+var W ;; Width
+var H ;; Height
+pop H
+pop W
+pop Y
+pop X
+add W W X
+add H H Y
+var cmp
+var y
+var x
+mov y Y
+@y_loop
+mov x X
+@x_loop
+push x
+push y
+call $putPixel
+add x x 1
+sub cmp x W
+jlz cmp @x_loop
+add y y 1
+sub cmp y H
+jlz cmp @y_loop
+ret
