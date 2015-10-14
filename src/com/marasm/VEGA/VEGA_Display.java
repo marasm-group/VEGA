@@ -34,35 +34,22 @@ public class VEGA_Display extends JPanel
         refresh.start();
     }
     static long pixel(int r,int g,int b) {return ((long)r)|(((long)g)<<8)|(((long)b)<<16);}
-    void putPixel(int x,int y,Variable pixel)
-    {
-        int p= pixel.intValue()&0xFFFFFF;
-        screen.setRGB(x, y, p);
-    }
+    void putPixel(int x,int y,Variable pixel){screen.setRGB(x,y,pixel.intValue()&0xFFFFFF);}
     public void setSize(int newX, int newY)
     {
         screen= toBufferedImage(screen.getScaledInstance(newX,newY,Image.SCALE_DEFAULT));
         repaint();
     }
-    @Override public void paint(Graphics g)
-    {
-        ((Graphics2D)g).drawImage(screen,0,0,this);
-    }
+    @Override public void paint(Graphics g) {g.drawImage(screen,0,0,this);}
     public static BufferedImage toBufferedImage(Image img)
     {
-        if (img instanceof BufferedImage)
-        {
-            return (BufferedImage) img;
-        }
-
-        // Create a buffered image with transparency
+        if (img instanceof BufferedImage) {return (BufferedImage) img;}
+        // Create a buffered image without transparency
         BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_RGB);
-
         // Draw the image on to the buffered image
         Graphics2D bGr = bimage.createGraphics();
         bGr.drawImage(img, 0, 0, null);
         bGr.dispose();
-
         // Return the buffered image
         return bimage;
     }
