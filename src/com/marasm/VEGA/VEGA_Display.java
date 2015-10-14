@@ -47,7 +47,6 @@ public class VEGA_Display extends JPanel
     @Override public void paint(Graphics g)
     {
         ((Graphics2D)g).drawImage(screen,0,0,this);
-        //.drawImage(screen,null,null);
     }
     public static BufferedImage toBufferedImage(Image img)
     {
@@ -57,7 +56,7 @@ public class VEGA_Display extends JPanel
         }
 
         // Create a buffered image with transparency
-        BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_RGB);
 
         // Draw the image on to the buffered image
         Graphics2D bGr = bimage.createGraphics();

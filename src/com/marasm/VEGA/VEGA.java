@@ -105,6 +105,9 @@ public class VEGA extends PPCDevice
             case putPixel:
                 gui.screen.putPixel(buf.get(0).intValue(),buf.get(1).intValue(),color);
                 return;
+            case setColor:
+                color=buf.get(0);
+                return;
             default:return;
         }
     }

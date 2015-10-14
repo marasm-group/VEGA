@@ -27,14 +27,12 @@ public class Main
         }
         System.out.println();
         PPC.out(new Variable(d.ctrlPort),new Variable(VEGA.setcolor));
-        PPC.out(new Variable(d.dataPort),new Variable(0xFFFFFF));
+        PPC.out(new Variable(d.dataPort),new Variable(0x0000FF));
         PPC.out(new Variable(d.ctrlPort),new Variable(VEGA.putpixel));
        for(int y=0;y<255;y++)
        {
            for(int x=0;x<255;x++)
            {
-               PPC.out(new Variable(d.ctrlPort),new Variable(VEGA.setcolor));
-               PPC.out(new Variable(d.dataPort),new Variable(0xFF+x<<8+y<<16));
                PPC.out(new Variable(d.ctrlPort),new Variable(VEGA.putpixel));
                PPC.out(new Variable(d.dataPort),new Variable(x));
                PPC.out(new Variable(d.dataPort),new Variable(y));
