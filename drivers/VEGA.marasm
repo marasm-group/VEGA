@@ -38,6 +38,7 @@ var R                  ;; red   = C&0xFF           // smallest byte
 pop R                  ;; green = (C&0xFF00)>>8    // middle byte
 out VEGA_dataPort R    ;; blue  = (C&0xFF0000)>>16 // biggest byte
 ret
+
 $putPixel  ;; put the pixel on screen with current color
 out VEGA_controlPort 2.1
 var X
@@ -57,22 +58,9 @@ pop H
 pop W
 pop Y
 pop X
-add W W X
-add H H Y
-var cmp
-var y
-var x
-mov y Y
-@y_loop
-mov x X
-@x_loop
-push x
-push y
-call $putPixel
-add x x 1
-sub cmp x W
-jlz cmp @x_loop
-add y y 1
-sub cmp y H
-jlz cmp @y_loop
+out VEGA_controlPort 2.2
+out VEGA_dataPort X
+out VEGA_dataPort Y
+out VEGA_dataPort W
+out VEGA_dataPort H
 ret

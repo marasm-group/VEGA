@@ -57,8 +57,10 @@ public class VEGA_Display extends JPanel
 
     void drawRect(int x,int y,int w,int h,Variable color)
     {
+        x=Math.min(x,screen.getWidth());
+        y=Math.min(y,screen.getHeight());
         w=Math.min(w,screen.getWidth()-x);
-        h=Math.min(w,screen.getHeight()-y);
+        h=Math.min(h,screen.getHeight()-y);
         int[] rgb=new int[w*h];
         int c=color.intValue()&colorMask;
         for(int i=0;i<w*h;i++){rgb[i]=c;}
