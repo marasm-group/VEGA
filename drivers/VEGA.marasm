@@ -34,9 +34,9 @@ ret
 
 $setColor  ;; set color for next drawing functions 
 out VEGA_controlPort 2 ;; color format is: C=R & 0xFFFFFF //remove all unnecessary stuff
-var R                  ;; red   = C&0xFF           // smallest byte
+var R                  ;; blue   = C&0xFF           // smallest byte
 pop R                  ;; green = (C&0xFF00)>>8    // middle byte
-out VEGA_dataPort R    ;; blue  = (C&0xFF0000)>>16 // biggest byte
+out VEGA_dataPort R    ;; red  = (C&0xFF0000)>>16 // biggest byte
 ret
 
 $putPixel  ;; put the pixel on screen with current color
