@@ -11,6 +11,7 @@ import java.awt.image.BufferedImage;
  */
 public class VEGA_Display extends JPanel
 {
+    static final int colorMask=0xFFFFFF;
     public BufferedImage screen;
     Thread refresh=new Thread()
     {
@@ -33,8 +34,8 @@ public class VEGA_Display extends JPanel
         screen= toBufferedImage(img.getScaledInstance(sizeX,sizeY,Image.SCALE_DEFAULT));
         refresh.start();
     }
-    static long pixel(int r,int g,int b) {return ((long)r)|(((long)g)<<8)|(((long)b)<<16);}
-    void putPixel(int x,int y,Variable pixel){screen.setRGB(x,y,pixel.intValue()&0xFFFFFF);}
+    static public long pixel(int r,int g,int b) {return ((long)b)|(((long)g)<<8)|(((long)r)<<16);}
+    void putPixel(int x,int y,Variable pixel){screen.setRGB(x%screen.getWidth(),y%screen.getHeight(),pixel.intValue()&colorMask);}
     public void setSize(int newX, int newY)
     {
         screen= toBufferedImage(screen.getScaledInstance(newX,newY,Image.SCALE_DEFAULT));
@@ -52,5 +53,15 @@ public class VEGA_Display extends JPanel
         bGr.dispose();
         // Return the buffered image
         return bimage;
+    }
+
+    void drawRect(int x,int y,int w,int h,Variable color)
+    {
+        w=Math.min(w,screen.getWidth()-x);
+        h=Math.min(w,screen.getHeight()-y);
+        int[] rgb=new int[w*h];
+        int c=color.intValue()&colorMask;
+        for(int i=0;i<w*h;i++){rgb[i]=c;}
+        screen.setRGB(x,y,w,h,rgb,0,w);
     }
 }

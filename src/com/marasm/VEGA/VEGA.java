@@ -74,11 +74,12 @@ public class VEGA extends PPCDevice
     enum GPU
     {
         NOP,setColor,
-        putPixel,
+        putPixel,drawRect,
     }
     public static final String nop="0";
     public static final String setcolor="2";
     public static final String putpixel="2.1";
+    public static final String drawrect="2.2";
 
     private void vegaCtrl(Variable cmd)
     {
@@ -93,6 +94,9 @@ public class VEGA extends PPCDevice
             case putpixel:
                 bufsize=2;
                 func=GPU.putPixel;return;
+            case drawrect:
+                bufsize=4;
+                func=GPU.drawRect;return;
             default:
                 return;
         }
@@ -102,11 +106,14 @@ public class VEGA extends PPCDevice
         switch (func)
         {
             case NOP:return;
+            case setColor:
+                color=buf.get(0);
+                return;
             case putPixel:
                 gui.screen.putPixel(buf.get(0).intValue(),buf.get(1).intValue(),color);
                 return;
-            case setColor:
-                color=buf.get(0);
+            case drawRect:
+                gui.screen.drawRect(buf.get(0).intValue(),buf.get(1).intValue(),buf.get(2).intValue(),buf.get(3).intValue(),color);
                 return;
             default:return;
         }

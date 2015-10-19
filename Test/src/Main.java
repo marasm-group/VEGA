@@ -29,14 +29,21 @@ public class Main
         PPC.out(new Variable(d.ctrlPort),new Variable(VEGA.setcolor));
         PPC.out(new Variable(d.dataPort),new Variable(0x0000FF));
         PPC.out(new Variable(d.ctrlPort),new Variable(VEGA.putpixel));
-       for(int y=0;y<255;y++)
+       for(int y=0;y<256;y++)
        {
-           for(int x=0;x<255;x++)
+           for(int x=0;x<256;x++)
            {
                PPC.out(new Variable(d.ctrlPort),new Variable(VEGA.putpixel));
                PPC.out(new Variable(d.dataPort),new Variable(x));
                PPC.out(new Variable(d.dataPort),new Variable(y));
            }
        }
+        PPC.out(new Variable(d.ctrlPort),new Variable(VEGA.setcolor));
+        PPC.out(new Variable(d.dataPort),new Variable(0x00FF00));
+        PPC.out(new Variable(d.ctrlPort),new Variable(VEGA.drawrect));
+        PPC.out(new Variable(d.dataPort),new Variable(256));
+        PPC.out(new Variable(d.dataPort),new Variable(256));
+        PPC.out(new Variable(d.dataPort),new Variable(256));
+        PPC.out(new Variable(d.dataPort),new Variable(256));
     }
 }
