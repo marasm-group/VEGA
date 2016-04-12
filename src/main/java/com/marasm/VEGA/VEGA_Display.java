@@ -4,6 +4,7 @@ import com.marasm.ppc.Variable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 
 /**
@@ -35,13 +36,25 @@ public class VEGA_Display extends JPanel
         refresh.start();
     }
     static public long pixel(int r,int g,int b) {return ((long)b)|(((long)g)<<8)|(((long)r)<<16);}
-    void putPixel(int x,int y,Variable pixel){screen.setRGB(x%screen.getWidth(),y%screen.getHeight(),pixel.intValue()&colorMask);}
+    public void putPixel(int x,int y,Variable pixel){screen.setRGB(x%screen.getWidth(),y%screen.getHeight(),pixel.intValue()&colorMask);}
     public void setSize(int newX, int newY)
     {
         screen= toBufferedImage(screen.getScaledInstance(newX,newY,Image.SCALE_DEFAULT));
         repaint();
     }
-    @Override public void paint(Graphics g) {g.drawImage(screen,0,0,this);}
+    public void drawLine(int x1,int y1,int x2,int y2,int width,Variable color)
+    {
+        Shape dLines = new Line2D.Float(x1,y1,x2,y2);
+        int c=color.intValue()&colorMask;
+        Graphics2D g=(Graphics2D)screen.getGraphics();
+        g.setColor(new Color(c));
+        g.setStroke(new BasicStroke(width));
+        g.drawLine(x1,y1,x2,y2);
+    }
+    @Override public void paint(Graphics g)
+    {
+        g.drawImage(screen,0,0,getWidth(),getHeight(),this);
+    }
     public static BufferedImage toBufferedImage(Image img)
     {
         if (img instanceof BufferedImage) {return (BufferedImage) img;}

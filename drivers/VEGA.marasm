@@ -6,15 +6,24 @@
     "author":"SR3u",
     "dependencies":["devCTRL"],
     "init":"$VEGA_init",
-    "devices":["VEGA"]
+    "devices":["VEGA"],
+	"Alzheimer":{"types":[{"name":":Point","fields":[{"name":"x","type":":number"},{"name":"y","type":":number"}]},{"name":":Size","fields":[{"name":"w","type":":number"},{"name":"h","type":":number"}]},{"name":":Rect","fields":[{"name":"origin","type":":Point"},{"name":"size","type":":Size"}]}]}}
 }
 #end
 $VEGA_init           ;; initialize VEGA module
 gvar VEGA_controlPort    ;; control port for VEGA device
-gvar VEGA_dataPort       ;; port for numeric data output
+gvar VEGA_colorPort      ;; port for color output
+gvar VEGA_pixelPort      ;; port for pixel coordinates output
+gvar VEGA_linePort       ;; port for line coordinates output
+gvar VEGA_rectPort       ;; port for rectangle data output
+gvar VEGA_memPort       ;; port for rectangle data output
 gvar VEGA_clearColor     ;; color for 
 mov VEGA_controlPort 127.0  ;;
-mov VEGA_dataPort 127.1     ;;
+mov VEGA_colorPort 127.1    ;;
+mov VEGA_pixelPort 127.2    ;;
+mov VEGA_linePort 127.3     ;;
+mov VEGA_rectPort 127.4     ;;
+mov VEGA_memPort 127.5     ;;
 mov VEGA_clearColor 0       ;; 0 -- black
 ret
 
@@ -32,21 +41,36 @@ sub i i 1
 push i
 ret
 
-$setColor  ;; set color for next drawing functions 
-out VEGA_controlPort 2 ;; color format is: C=R & 0xFFFFFF //remove all unnecessary stuff
-var R                  ;; blue   = C&0xFF           // smallest byte
-pop R                  ;; green = (C&0xFF00)>>8    // middle byte
-out VEGA_dataPort R    ;; red  = (C&0xFF0000)>>16 // biggest byte
-ret
+$setColor  ;; set color for next drawing functions                        
+var R                  ;; color format is: C=R & 0xFFFFFF //remove all unnecessary stuff
+pop R                  ;; blue   = C&0xFF           // smallest byte
+out VEGA_colorPort R   ;; green = (C&0xFF00)>>8    // middle byte
+ret                    ;; red  = (C&0xFF0000)>>16 // biggest byte
 
 $putPixel  ;; put the pixel on screen with current color
-out VEGA_controlPort 2.1
 var X
 var Y 
 pop Y
 pop X
-out VEGA_dataPort X
-out VEGA_dataPort Y
+out VEGA_pixelPort X
+out VEGA_pixelPort Y
+ret
+$drawLine ;; draw a line with current color
+var X1 ;; X coordinate of begining
+var Y1 ;; Y coordinate of begining
+var X2 ;; X coordinate of end
+var Y2 ;; Y coordinate of end
+var W  ;; line width
+pop W
+pop Y2
+pop X2
+pop Y1
+pop X1
+out VEGA_linePort X1
+out VEGA_linePort Y1
+out VEGA_linePort X2
+out VEGA_linePort Y2
+out VEGA_linePort W
 ret
 
 $drawRect ;; draw a rectangle with current color
@@ -58,9 +82,15 @@ pop H
 pop W
 pop Y
 pop X
-out VEGA_controlPort 2.2
-out VEGA_dataPort X
-out VEGA_dataPort Y
-out VEGA_dataPort W
-out VEGA_dataPort H
+out VEGA_rectPort X
+out VEGA_rectPort Y
+out VEGA_rectPort W
+out VEGA_rectPort H
 ret
+
+$drawImage ;; draw a rectangle with current color
+var PTR ;; pointer to image in memory
+pop PTR ;; image format: PTR->[W,H,px0,px1,px2...,pxW*H]
+out VEGA_memPort PTR
+ret
+
