@@ -3,7 +3,8 @@ package com.marasm.VEGA;
 import com.marasm.ppc.*;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 
 /**
@@ -45,10 +46,10 @@ public class VEGA extends PPCDevice
             public void run() {
                 while (true)
                 {synchronized (color){
-                    retrace(color);
                     try {
-                        sleep(100);
-                    } catch (InterruptedException e) {
+                        retrace();
+                        sleep(25);
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }}
@@ -72,99 +73,173 @@ public class VEGA extends PPCDevice
         }
         return new Variable();
     }
-    ArrayList<Variable> pixelBuf = new ArrayList<Variable>();
-    ArrayList<Variable> lineBuf = new ArrayList<Variable>();
-    ArrayList<Variable> rectBuf = new ArrayList<Variable>();
-    ArrayList<Variable> memBuf = new ArrayList<Variable>();
+    Queue<Operation> buf = new LinkedBlockingQueue<>();
+    Operation colorOp = null, pixelOp = null, lineOp = null, rectOp = null, memOp = null;
     @Override
     public void out(Variable port,Variable data)
     {
         switch (port.toString())
         {
             case ctrlPort:
-                ctrlOut(data);return;
+                ctrlOut(data);
+                return;
             case colorPort:
-                synchronized (color) {
-                    retrace(color);
-                    color = data;
-                }
+                colorOp = new Operation(port,1);
+                colorOp.args[0] = data;
+                buf.offer(colorOp);
                 break;
             case pixelPort:
-                synchronized (pixelBuf) {
-                    pixelBuf.add(data);
+                if(pixelOp == null)
+                {
+                    pixelOp = new Operation(port,2);
+                    pixelOp.args[0] = data;
+                }
+                else
+                {
+                    pixelOp.args[1] = data;
+                    buf.offer(pixelOp);
+                    pixelOp = null;
                 }
                 break;
             case linePort:
-                synchronized (lineBuf) {
-                    lineBuf.add(data);
+                if(lineOp == null)
+                {
+                    lineOp = new Operation(port,5);
+                    lineOp.args[0] = data;
+                    lineOp.args_count++;
+                }
+                else
+                {
+                    if(lineOp.args_count >= 4)
+                    {
+                        lineOp.args[4] = data;
+                        buf.offer(lineOp);
+                        lineOp = null;
+                    }
+                    else
+                    {
+                        lineOp.args[lineOp.args_count] = data;
+                        lineOp.args_count++;
+                    }
                 }
                 break;
             case rectPort:
-                synchronized (rectBuf) {
-                    rectBuf.add(data);
+                if(rectOp == null)
+                {
+                    rectOp = new Operation(port,4);
+                    rectOp.args[0] = data;
+                    rectOp.args_count++;
+                }
+                else
+                {
+                    if(rectOp.args_count >= 3)
+                    {
+                        rectOp.args[3] = data;
+                        buf.offer(rectOp);
+                        rectOp = null;
+                    }
+                    else
+                    {
+                        rectOp.args[rectOp.args_count] = data;
+                        rectOp.args_count++;
+                    }
                 }
                 break;
             case memPort:
-                synchronized (memBuf) {
-                    memBuf.add(data);
+                if(memOp == null)
+                {
+                    memOp = new Operation(port,3);
+                    memOp.args[0] = data;
+                    memOp.args_count++;
+                }
+                else
+                {
+                    if(memOp.args_count >= 2)
+                    {
+                        memOp.args[3] = data;
+                        buf.offer(memOp);
+                        memOp = null;
+                    }
+                    else
+                    {
+                        memOp.args[memOp.args_count] = data;
+                        memOp.args_count++;
+                    }
                 }
                 break;
         }
     }
-    void retrace(Variable color)
+    long prevTime = 1;
+    public long frameTime = 1;
+    public long retraceTime = 1;
+    void retrace()
     {
-        synchronized (pixelBuf){
-            while(pixelBuf.size()>1)
+        frameTime = System.currentTimeMillis() - prevTime;
+        prevTime = System.currentTimeMillis();
+        while (true)
+        {
+            Operation op = buf.poll();
+            if (op == null)
             {
-                int x,y;
-                x=pixelBuf.remove(0).intValue();
-                y=pixelBuf.remove(0).intValue();
-                gui.screen.putPixel(x,y,color);
+                break;
             }
-        }
-        synchronized (rectBuf){
-            while(rectBuf.size()>3)
+            int x, y, w, h;
+            switch (op.opcode.toString())
             {
-                int x,y,w,h;
-                x=rectBuf.remove(0).intValue();
-                y=rectBuf.remove(0).intValue();
-                w=rectBuf.remove(0).intValue();
-                h=rectBuf.remove(0).intValue();
-                gui.screen.drawRect(x,y,w,h,color);
-            }
-        }
-        synchronized (lineBuf){
-            while (lineBuf.size()>4)
-            {
-                int x1=lineBuf.remove(0).intValue();
-                int y1=lineBuf.remove(0).intValue();
-                int x2=lineBuf.remove(0).intValue();
-                int y2=lineBuf.remove(0).intValue();
-                int width=lineBuf.remove(0).intValue();
-                gui.screen.drawLine(x1,y1,x2,y2,width,color);
-            }
-        }
-        synchronized (memBuf){
-            while(memBuf.size()>3)
-            {
-                int x=memBuf.remove(0).intValue();
-                int y=memBuf.remove(0).intValue();
-                Variable memPointer=memBuf.remove(0);
-                RAM ram=RAM.getInstance();
-                int w=ram._load(memPointer).intValue();
-                int h=ram._load(memPointer.add(new Variable(1))).intValue();
-                memPointer=memPointer.add(new Variable(2));
-                for(int _x=0;_x<w;_x++)
-                {
-                    for(int _y=0;_y<h;_y++)
+                case colorPort:
+                    color = op.args[0];
+                    break;
+                case pixelPort:
+                    x = op.args[0].intValue();
+                    y = op.args[1].intValue();
+                    gui.screen.putPixel(x, y, color);
+                    break;
+                case linePort:
+                    int x1 = op.args[0].intValue();
+                    int y1 = op.args[1].intValue();
+                    int x2 = op.args[2].intValue();
+                    int y2 = op.args[3].intValue();
+                    int width = op.args[4].intValue();
+                    gui.screen.drawLine(x1, y1, x2, y2, width, color);
+                    break;
+                case rectPort:
+                    x = op.args[0].intValue();
+                    y = op.args[1].intValue();
+                    w = op.args[2].intValue();
+                    h = op.args[3].intValue();
+                    gui.screen.drawRect(x, y, w, h, color);
+                    break;
+                case memPort:
+                    x = op.args[0].intValue();
+                    y = op.args[1].intValue();
+                    Variable memPointer = op.args[2];
+                    RAM ram = RAM.getInstance();
+                    w = ram._load(memPointer).intValue();
+                    h = ram._load(memPointer.add(new Variable(1))).intValue();
+                    memPointer = memPointer.add(new Variable(2));
+                    for (int _x = 0; _x < w; _x++)
                     {
-                        gui.screen.putPixel(x+_x,y+_y,ram._load(memPointer));
-                        memPointer=memPointer.add(new Variable(1));
+                        for (int _y = 0; _y < h; _y++)
+                        {
+                            gui.screen.putPixel(x + _x, y + _y, ram._load(memPointer));
+                            memPointer = memPointer.add(new Variable(1));
+                        }
                     }
-                }
+                    break;
             }
         }
+        retraceTime = System.currentTimeMillis() - prevTime;
     }
     static public void main(String args[]){System.out.println("This is just an mvm device!");}
-
+    class Operation
+    {
+        Variable opcode;
+        Variable[] args;
+        int args_count = 0;
+        Operation(Variable code,int argsCount)
+        {
+            opcode = code;
+            args = new Variable[argsCount];
+        }
+    }
 }

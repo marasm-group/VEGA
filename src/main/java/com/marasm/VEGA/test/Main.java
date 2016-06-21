@@ -20,6 +20,24 @@ public class Main
         PPC.out(new Variable(d.ctrlPort),new Variable(32));
         PPC.out(new Variable(d.ctrlPort),CTRL.GETMAN);
         Variable v=new Variable("-1");
+        new Thread()
+        {
+            @Override public void run()
+            {
+                while(true)
+                {
+                    try
+                    {
+                        Thread.sleep(100);
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    System.out.println("FPS: " + 1000.0 / d.frameTime + " retraceTime: " + d.retraceTime);
+                }
+            }
+        }.start();
         int i=0;
         while (!v.equals(new Variable(0)))
         {
@@ -42,7 +60,6 @@ public class Main
         PPC.out(new Variable(d.rectPort),new Variable(64));
         PPC.out(new Variable(d.rectPort),new Variable(64));
         PPC.out(new Variable(d.rectPort),new Variable(64));
-
         PPC.out(new Variable(d.colorPort),new Variable(0xFF0000));
         PPC.out(new Variable(d.linePort),new Variable(0));
         PPC.out(new Variable(d.linePort),new Variable(0));
