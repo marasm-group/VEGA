@@ -73,7 +73,7 @@ public class VEGA extends PPCDevice
         }
         return new Variable();
     }
-    Queue<Operation> buf = new LinkedBlockingQueue<>();
+    Queue<Operation> pipeline = new LinkedBlockingQueue<>();
     Operation colorOp = null, pixelOp = null, lineOp = null, rectOp = null, memOp = null;
     @Override
     public void out(Variable port,Variable data)
@@ -86,7 +86,7 @@ public class VEGA extends PPCDevice
             case colorPort:
                 colorOp = new Operation(port,1);
                 colorOp.args[0] = data;
-                buf.offer(colorOp);
+                pipeline.offer(colorOp);
                 break;
             case pixelPort:
                 if(pixelOp == null)
@@ -97,7 +97,7 @@ public class VEGA extends PPCDevice
                 else
                 {
                     pixelOp.args[1] = data;
-                    buf.offer(pixelOp);
+                    pipeline.offer(pixelOp);
                     pixelOp = null;
                 }
                 break;
@@ -113,7 +113,7 @@ public class VEGA extends PPCDevice
                     if(lineOp.args_count >= 4)
                     {
                         lineOp.args[4] = data;
-                        buf.offer(lineOp);
+                        pipeline.offer(lineOp);
                         lineOp = null;
                     }
                     else
@@ -135,7 +135,7 @@ public class VEGA extends PPCDevice
                     if(rectOp.args_count >= 3)
                     {
                         rectOp.args[3] = data;
-                        buf.offer(rectOp);
+                        pipeline.offer(rectOp);
                         rectOp = null;
                     }
                     else
@@ -157,7 +157,7 @@ public class VEGA extends PPCDevice
                     if(memOp.args_count >= 2)
                     {
                         memOp.args[3] = data;
-                        buf.offer(memOp);
+                        pipeline.offer(memOp);
                         memOp = null;
                     }
                     else
@@ -178,7 +178,7 @@ public class VEGA extends PPCDevice
         prevTime = System.currentTimeMillis();
         while (true)
         {
-            Operation op = buf.poll();
+            Operation op = pipeline.poll();
             if (op == null)
             {
                 break;
